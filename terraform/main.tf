@@ -15,19 +15,20 @@ module "network" {
 }
 
 module "storage" {
-  source = "./module/storage"
+  source = "./modules/storage"
   
-  resource_group_name = module.azurerm_resource_group.resource_group_name
+  resource_group_name = module.resource_group.resource_group_name
   location            = var.location
   environment         = var.environment
   project_name        = var.project_name
 }
  
 module "key_vault" {
-  source = "./module/key-key_vault"
+  source = "./modules/key-vault"
 
-  resource_group_name = module.azurerm_resource_group.resource_group_name
+  resource_group_name = module.resource_group.resource_group_name
   location            = var.location
   environment         = var.environment
   project_name        = var.project_name
+}
 

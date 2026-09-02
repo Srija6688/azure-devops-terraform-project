@@ -1,6 +1,14 @@
 trigger:
 - master
 
+parameters:
+  - name: 'environment'
+    type: string
+    default: dev
+    values:
+      - dev
+      - test
+
 pool:
   vmImage: ubuntu-latest
 
@@ -28,8 +36,15 @@ stages:
               backendAzureRmResourceGroupName: 'test_rg'
               backendAzureRmStorageAccountName: 'cicdstorageacc'
               backendAzureRmContainerName: 'azureblob-container'
-              backendAzureRmKey: 'terraform.tfstate'
-              workingDirectory: '$(System.DefaultWorkingDirectory)'
+              backendAzureRmKey: '${{ parameters.environment }}.tfstate'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
+
+          - task: TerraformTaskV4@4
+            displayName: 'Terraform Validate'
+            inputs:
+              provider: 'azurerm'
+              command: 'validate'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
 
           - task: TerraformTaskV4@4
             displayName: 'Terraform Plan'
@@ -37,12 +52,13 @@ stages:
               provider: 'azurerm'
               command: 'plan'
               environmentServiceNameAzureRM: 'MyAzureServiceConnection'
-              commandOptions: '-out=tfplan'
-              workingDirectory: '$(System.DefaultWorkingDirectory)'
+              commandOptions: '-var-file="${{ parameters.environment }}.tfvars" -out=tfplan'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
 
           - task: PublishBuildArtifacts@1
             displayName: 'Publish Plan Artifact'
             inputs:
-              PathtoPublish: '$(System.DefaultWorkingDirectory)/tfplan'
+              PathtoPublish: '$(System.DefaultWorkingDirectory)/terraform/tfplan'
               ArtifactName: 'tfplan'
               publishLocation: 'Container'
+
