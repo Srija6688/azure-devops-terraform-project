@@ -11,4 +11,4 @@ variable "environment" {
 }
 
 variable "project_name" {
-  type =
+  type = string
