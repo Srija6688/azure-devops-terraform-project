@@ -37,6 +37,11 @@ stages:
               artifactName: 'tfplan'
               targetPath: '$(System.DefaultWorkingDirectory)'
 
+          - script: |
+              echo "=== Files in working directory ==="
+              find "$(System.DefaultWorkingDirectory)" -type f -print
+            displayName: 'Check Downloaded Artifact'
+
           - task: TerraformTaskV4@4
             displayName: 'Terraform Init'
             inputs:
