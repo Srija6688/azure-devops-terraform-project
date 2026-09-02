@@ -1,3 +1,3 @@
 output "storage_account"{
-    value = azurerm_storage_account.storage.value
+    value = azurerm_storage_account.storage.name
 }
