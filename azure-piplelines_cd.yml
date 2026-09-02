@@ -33,7 +33,7 @@ stages:
               project: 'Azure-Practice'
               definition: '1'
               buildVersionToDownload: 'specific'
-              buildId: '13'
+              buildId: '24'
               downloadType: 'single'
               artifactName: 'tfplan'
               targetPath: '$(System.DefaultWorkingDirectory)'
