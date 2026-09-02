@@ -12,3 +12,4 @@ variable "environment" {
 
 variable "project_name" {
   type = string
+}
