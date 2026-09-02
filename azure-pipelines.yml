@@ -1,0 +1,48 @@
+trigger:
+- master
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+
+  - stage: Terraform_CI_Stage
+    displayName: 'Terraform CI Stage'
+    jobs:
+
+      - job: Terraform_CI
+        displayName: 'Terraform CI Job'
+        steps:
+
+          - task: TerraformInstaller@1
+            displayName: 'Install Terraform'
+            inputs:
+              terraformVersion: 'latest'
+
+          - task: TerraformTaskV4@4
+            displayName: 'Terraform Init'
+            inputs:
+              provider: 'azurerm'
+              command: 'init'
+              backendServiceArm: 'MyAzureServiceConnection'
+              backendAzureRmResourceGroupName: 'test_rg'
+              backendAzureRmStorageAccountName: 'cicdstorageacc'
+              backendAzureRmContainerName: 'azureblob-container'
+              backendAzureRmKey: 'terraform.tfstate'
+              workingDirectory: '$(System.DefaultWorkingDirectory)'
+
+          - task: TerraformTaskV4@4
+            displayName: 'Terraform Plan'
+            inputs:
+              provider: 'azurerm'
+              command: 'plan'
+              environmentServiceNameAzureRM: 'MyAzureServiceConnection'
+              commandOptions: '-out=tfplan'
+              workingDirectory: '$(System.DefaultWorkingDirectory)'
+
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish Plan Artifact'
+            inputs:
+              PathtoPublish: '$(System.DefaultWorkingDirectory)/tfplan'
+              ArtifactName: 'tfplan'
+              publishLocation: 'Container'
