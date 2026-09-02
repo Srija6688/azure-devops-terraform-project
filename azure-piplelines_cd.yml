@@ -1,0 +1,59 @@
+trigger: none
+
+parameters:
+  - name: 'environment'
+    type: string
+    default: dev
+    values:
+      - dev
+      - test
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+
+  - stage: Terraform_CD_Stage
+    displayName: 'Terraform CD Stage'
+    jobs:
+
+      - job: Terraform_CD
+        displayName: 'Terraform CD Job'
+        steps:
+
+          - task: TerraformInstaller@1
+            displayName: 'Install Terraform'
+            inputs:
+              terraformVersion: 'latest'
+
+          - task: DownloadBuildArtifacts@1
+            displayName: 'Download Plan Artifact'
+            inputs:
+              buildType: 'specific'
+              project: 'Azure-Practice'
+              definition: '1'
+              buildVersionToDownload: 'latest'
+              downloadType: 'single'
+              artifactName: 'tfplan'
+              targetPath: '$(System.DefaultWorkingDirectory)/tfplan'
+
+          - task: TerraformTaskV4@4
+            displayName: 'Terraform Init'
+            inputs:
+              provider: 'azurerm'
+              command: 'init'
+              backendServiceArm: 'MyAzureServiceConnection'
+              backendAzureRmResourceGroupName: 'test_rg'
+              backendAzureRmStorageAccountName: 'cicdstorageacc'
+              backendAzureRmContainerName: 'azureblob-container'
+              backendAzureRmKey: '${{ parameters.environment }}.tfstate'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
+
+          - task: TerraformTaskV4@4
+            displayName: 'Terraform Apply'
+            inputs:
+              provider: 'azurerm'
+              command: 'apply'
+              environmentServiceNameAzureRM: 'MyAzureServiceConnection'
+              commandOptions: '-auto-approve $(System.DefaultWorkingDirectory)/tfplan/tfplan'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
